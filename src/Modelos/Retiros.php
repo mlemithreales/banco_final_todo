@@ -2,32 +2,23 @@
 
 namespace App\Modelos;
 
-class Retiros
+class Retiro
 {
-    private int $id;
-    private float $monto;
-    private string $fecha;
-    private int $cuentaId;
-
-    public function __construct(int $id, float $monto, string $fecha, int $cuentaId)
-    {
-        $this->id = $id;
-        $this->monto = $monto;
-        $this->fecha = $fecha;
-        $this->cuentaId = $cuentaId;
+    public function __construct(
+        public readonly int $id,
+        public readonly int $cuentaId,
+        public readonly float $valor,
+        public readonly string $fecha,
+    ) {
     }
 
-    public static function desdeArreglo(array $fila): self
+    public static function desdeFila(array $fila): self
     {
-        return new self($fila['id'], $fila['monto'], $fila['fecha'], $fila['cuenta_id']);
-    }
-
-    public function rArreglo(): array{
-        return [
-            'id' => $this->id,
-            'monto' => $this->monto,
-            'fecha' => $this->fecha,
-            'cuenta_id' => $this->cuentaId
-        ];
+        return new self(
+            (int) $fila['id'],
+            (int) $fila['cuenta_id'],
+            (float) $fila['valor'],
+            $fila['fecha']
+        );
     }
 }

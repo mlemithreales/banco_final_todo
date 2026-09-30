@@ -4,31 +4,19 @@ namespace App\Modelos;
 
 class Usuario
 {
-    private int $id;
-    private string $nombre;
-    private string $email;
-    private string $contrasena;
-
-    public function __construct(int $id, string $nombre, string $email, string $contrasena)
-    {
-        $this->id = $id;
-        $this->nombre = $nombre;
-        $this->email = $email;
-        $this->contrasena = $contrasena;
+    public function __construct(
+        public readonly int $id,
+        public readonly int $cuentaId,
+        public readonly string $claveHash,
+    ) {
     }
 
-    public static function desdeArreglo(array $fila): self
+    public static function desdeFila(array $fila): self
     {
-        return new self($fila['id'], $fila['nombre'], $fila['email'], $fila['contrasena']);
-    }
-
-    public function uArreglo(): array
-    {
-        return [
-            'id' => $this->id,
-            'nombre' => $this->nombre,
-            'email' => $this->email,
-            'contrasena' => $this->contrasena,
-        ];
+        return new self(
+            (int) $fila['id'],
+            (int) $fila['cuenta_id'],
+            $fila['clave_hash']
+        );
     }
 }

@@ -2,10 +2,9 @@
 
 namespace App\Repositorios;
 
+use App\Nucleo\Conexion;
 use App\Modelos\Cliente;
 use PDO;
-
-require __DIR__ . '/../Nucleo/Conexion.php';
 
 class ClienteRepositorio
 {
@@ -13,26 +12,26 @@ class ClienteRepositorio
 
     public function __construct()
     {
-        global $pdo;
-
-        $this->pdo = $pdo;
+        $this->pdo = Conexion::obtener();
     }
 
-    public function obtenerTodos(): array
+    public function todos(): array
     {
-        $sql = "SELECT id, nombre FROM clientes";
+        $stmt = $this->pdo->prepare('SELECT id, nombre FROM clientes ORDER BY nombre');
+        $stmt->execute();
 
-        $stmt = $this->pdo->query($sql);
+        return array_map(
+            fn(array $fila) => Cliente::desdeFila($fila),
+            $stmt->fetchAll()
+        );
+    }
 
-        $clientes = [];
+    public function buscar(int $id): ?Cliente
+    {
+        $stmt = $this->pdo->prepare('SELECT id, nombre FROM clientes WHERE id = ?');
+        $stmt->execute([$id]);
+        $fila = $stmt->fetch();
 
-        while ($fila = $stmt->fetch()) {
-            $clientes[] = new Cliente(
-                $fila['id'],
-                $fila['nombre']
-            );
-        }
-
-        return $clientes;
+        return $fila ? Cliente::desdeFila($fila) : null;
     }
 }

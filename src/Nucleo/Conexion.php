@@ -1,17 +1,36 @@
 <?php
 
-try {
-    $pdo = new PDO(
-        'mysql:host=127.0.0.1;dbname=db_banco_adso;charset=utf8mb4',
-        'root',
-        '1208',
+namespace App\Nucleo;
 
-        [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]
-    );
-} catch (PDOException $e) {
-    error_log($e->getMessage());          
-    die('No fue posible conectar con la base de datos.');
+use PDO;
+
+class Conexion
+{
+    private static ?PDO $instancia = null;
+
+    private function __construct()
+    {
+    }
+
+    public static function obtener(): PDO
+    {
+        if (self::$instancia === null) {
+            $config = require __DIR__ . '/../../config/basedatos.php';
+
+            $dsn = sprintf(
+                'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+                $config['host'],
+                $config['puerto'],
+                $config['basedatos'],
+                $config['charset']
+            );
+
+            self::$instancia = new PDO($dsn, $config['usuario'], $config['clave'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
+        }
+
+        return self::$instancia;
+    }
 }

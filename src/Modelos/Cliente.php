@@ -4,26 +4,14 @@ namespace App\Modelos;
 
 class Cliente
 {
-    private int $id;
-    private string $nombre;
-
-    public function __construct(int $id, string $nombre)
-    {
-        $this->id = $id;
-        $this->nombre = $nombre;
+    public function __construct(
+        public readonly int $id,
+        public readonly string $nombre,
+    ) {
     }
 
-   public static function clienteArreglo(array $filas): self
-   {
-        return new self($filas['id'], $filas['nombre']);
-   }
-
-    public function cArreglo(): array
+    public static function desdeFila(array $fila): self
     {
-          return [
-                'id' => $this->id,
-                'nombre' => $this->nombre,
-          ];
+        return new self((int) $fila['id'], $fila['nombre']);
     }
-}   
-
+}

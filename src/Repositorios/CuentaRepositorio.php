@@ -2,10 +2,9 @@
 
 namespace App\Repositorios;
 
+use App\Nucleo\Conexion;
 use App\Modelos\Cuenta;
 use PDO;
-
-require __DIR__ . '/../Nucleo/Conexion.php';
 
 class CuentaRepositorio
 {
@@ -13,28 +12,52 @@ class CuentaRepositorio
 
     public function __construct()
     {
-        global $pdo;
-
-        $this->pdo = $pdo;
+        $this->pdo = Conexion::obtener();
     }
 
-    public function obtenerTodos(): array
+    public function buscarPorNumero(string $numero): ?Cuenta
     {
-        $sql = "SELECT id, saldo, cliente_id FROM cuentas";
+        $stmt = $this->pdo->prepare(
+            'SELECT c.id, c.numero_cuenta, c.saldo, c.cliente_id, cl.nombre AS cliente_nombre
+             FROM cuentas c
+             INNER JOIN clientes cl ON cl.id = c.cliente_id
+             WHERE c.numero_cuenta = ?'
+        );
+        $stmt->execute([$numero]);
+        $fila = $stmt->fetch();
 
-        $stmt = $this->pdo->query($sql);
+        return $fila ? Cuenta::desdeFila($fila) : null;
+    }
 
-        $cuentas = [];
+    public function buscarPorId(int $id): ?Cuenta
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT c.id, c.numero_cuenta, c.saldo, c.cliente_id, cl.nombre AS cliente_nombre
+             FROM cuentas c
+             INNER JOIN clientes cl ON cl.id = c.cliente_id
+             WHERE c.id = ?'
+        );
+        $stmt->execute([$id]);
+        $fila = $stmt->fetch();
 
-        while ($fila = $stmt->fetch()) {
-            $cuentas[] = new Cuenta(
-                $fila['id'],
-                $fila['saldo'],
-                $fila['cliente_id']
-            );
-        }
+        return $fila ? Cuenta::desdeFila($fila) : null;
+    }
 
-        return $cuentas;
+    public function actualizarSaldo(int $cuentaId, float $saldo): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE cuentas SET saldo = ? WHERE id = ?');
+        $stmt->execute([$saldo, $cuentaId]);
+    }
+
+    public function descontarSaldo(int $cuentaId, float $valor): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE cuentas SET saldo = saldo - ? WHERE id = ?');
+        $stmt->execute([$valor, $cuentaId]);
+    }
+
+    public function aumentarSaldo(int $cuentaId, float $valor): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE cuentas SET saldo = saldo + ? WHERE id = ?');
+        $stmt->execute([$valor, $cuentaId]);
     }
 }
-
